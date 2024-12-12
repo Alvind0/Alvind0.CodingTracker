@@ -20,15 +20,65 @@ public class CodingSessionController
         {
             startTime = GetTime("Insert Start Time (Format: MM-dd-yy H:mm): ");
             endTime = GetTime("Insert End Time (Format: MM-dd-yy H:mm): ");
-            if (startTime > endTime)
-            {
-                Console.Clear();
-                Console.WriteLine("Start Time cannot be later than End Time");
-                continue;
-            }
-            break;
+            if (ValidateDateTime(startTime, endTime)) break;
         }
         _repository.AddSession(startTime, endTime);
+    }
+
+    public void UpdateRecord()
+    {
+        var isUpdateStart = false;
+        var isUpdateEnd = false;
+        DateTime startTime, endTime;
+        var id = GetId("Enter the Id for the session do you want to edit.");
+        var updateItems = AnsiConsole.Prompt(
+            new MultiSelectionPrompt<string>()
+            .Title("Choose items to edit: ")
+            .InstructionsText(
+                "(Press [blue]<space>[/] to toggle options and [green]<enter>[/] to accept.")
+            .AddChoices(new[]
+            {
+                "Start time", "End time"
+            }));
+
+
+        if (updateItems.Contains("Start time") && updateItems.Contains("End time"))
+        {
+            isUpdateStart = true;
+            isUpdateEnd = true;
+
+            while (true)
+            {
+                startTime = GetTime(@"Enter start time (format: MM-dd-yy H:mm)");
+                endTime = GetTime(@"Enter end time (format: MM-dd-yy H:mm)");
+                if (ValidateDateTime(startTime, endTime)) break;
+            }
+            _repository.UpdateSession(id, isUpdateStart, isUpdateEnd, startTime, endTime);
+        }
+        else if (updateItems.Contains("Start time"))
+        {
+            isUpdateStart = true;
+            startTime = GetTime(@"Enter start time (format: MM-dd-yy H:mm)");
+            _repository.UpdateSession(id, isUpdateStart, isUpdateEnd, startTime);
+        }
+        else if (updateItems.Contains("End time"))
+        {
+            isUpdateEnd = true;
+            endTime = GetTime(@"Enter end time (format: MM-dd-yy H:mm)");
+            _repository.UpdateSession(id, isUpdateStart, isUpdateEnd, endTime);
+        }        
+    }
+
+    private int GetId(string message)
+    {
+        ShowCodingSessions();
+        while (true)
+        {
+            var id = AnsiConsole.Ask<int>(message);
+            var isExists = _repository.VerifyId(id);
+            if (isExists) return id;
+            Console.WriteLine("Record does not exists.");
+        }
     }
 
     public DateTime GetTime(string message)
@@ -43,6 +93,17 @@ public class CodingSessionController
             Console.Clear();
             Console.WriteLine("Please enter in the correct format.");
         }
+    }
+
+    public bool ValidateDateTime(DateTime startTime, DateTime endTime)
+    {
+        if (startTime > endTime)
+        {
+            Console.Clear();
+            Console.WriteLine("Start time cannot be later than End time");
+            return false;
+        }
+        return true;
     }
 
     public void ShowCodingSessions()
@@ -62,7 +123,7 @@ public class CodingSessionController
                 session.Duration.ToString(@"hh\:mm")
                 );
         }
-
+        Console.Clear();
         AnsiConsole.Write(table);
     }
 }

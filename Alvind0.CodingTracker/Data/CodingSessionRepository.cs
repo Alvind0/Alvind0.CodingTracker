@@ -1,7 +1,6 @@
-﻿using Dapper;
+﻿using Alvind0.CodingTracker.Models;
+using Dapper;
 using Microsoft.Data.Sqlite;
-using Alvind0.CodingTracker.Models;
-using System.Net.NetworkInformation;
 namespace Alvind0.CodingTracker.Data;
 
 
@@ -63,6 +62,47 @@ VALUES (@StartTime, @EndTime, @Duration);";
         }
     }
 
+    //TODO: Implement
+    public void UpdateSession(int id, bool isUpdateStart, bool isUpdateEnd, DateTime? startTime = null, DateTime? endTime = null)
+    {
+        var query = "";
+
+        if (!isUpdateStart && !isUpdateEnd)
+        {
+            Console.WriteLine("Nothing to update here.");
+            return;
+        }
+
+        using (var connection = GetConnection())
+        {
+            connection.Open();
+            if (!startTime.HasValue)
+            {
+                var databaseStartTime = @"SELECT StartTime FROM 'Coding Sessions' WHERE Id = @Id";
+                startTime = connection.QuerySingle<DateTime>(databaseStartTime, id);
+            }
+
+            if (!endTime.HasValue)
+            {
+                var databaseEndTime = @"SELECT EndTime FROM 'Coding Sessions' WHERE Id = @Id";
+                endTime = connection.QuerySingle<DateTime>(databaseEndTime, id);
+            }
+
+            var session = new CodingSession
+            {
+                Id = id,
+                StartTime = startTime.HasValue ? startTime.Value : throw new Exception("StartTime has no value."),
+                EndTime = endTime
+            };
+
+            if (isUpdateStart && isUpdateEnd) query = @"
+UPDATE 'Coding Sessions' SET StartTime = @StartTime, EndTime = @EndTime, Duration = @Duration WHERE Id = @Id";
+
+            connection.Execute(query, session);
+        }
+
+    }
+
     public IEnumerable<CodingSession> GetCodingSessions()
     {
         using (var connection = GetConnection())
@@ -70,6 +110,16 @@ VALUES (@StartTime, @EndTime, @Duration);";
             var query = @"SELECT * FROM 'Coding Sessions'";
             var sessions = connection.Query<CodingSession>(query);
             return sessions;
+        }
+    }
+
+    internal bool VerifyId(int id)
+    {
+        using (var connection = GetConnection())
+        {
+            var query = @"Select Id FROM 'Coding Sessions' WHERE Id = @Id";
+            var isExists = connection.QuerySingleOrDefault<int?>(query, new { Id = id });
+            return isExists != null ? true : false;
         }
     }
 }

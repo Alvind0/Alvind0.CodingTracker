@@ -13,6 +13,7 @@ public class Menu
     }
     public void MainMenu()
     {
+        
         var isExitApp = false;
         while (true)
         {
@@ -81,6 +82,7 @@ public class Menu
                     _codingSessionController.ShowCodingSessions();
                     break;
                 case MenuOption.EditRecord:
+                    _codingSessionController.UpdateRecord();
                     break;
                 case MenuOption.DeleteRecord:
                     break;
