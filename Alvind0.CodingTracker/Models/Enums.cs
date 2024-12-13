@@ -4,8 +4,12 @@ public class Enums
 {
     public enum SortOrder
     {
-        Ascending,
-        Descending
+        Default, Ascending, Descending
+    }
+
+    public enum SortType
+    {
+        Default, Id, Date, Duration
     }
 
     public enum MenuOption
@@ -16,12 +20,13 @@ public class Enums
         // Session Menu (5, 2)
         SessionStart, SessionEnd,
 
-        // Goal Menu (7, 3)
-        AddGoal, EditGoal, RemoveGoal,
+        // Goal Menu (7, 4)
+        ViewGoals, AddGoal, EditGoal, RemoveGoal, 
 
-        // Record Menu (10, 6)
+        // Record Menu (11, 6)
         ViewRecords, EditRecord, DeleteRecord, SortRecords, FilterRecords, ShowReport,
 
+        // 17
         Return,
     }
 }

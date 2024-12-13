@@ -1,25 +1,16 @@
 ﻿using Alvind0.CodingTracker.Models;
+using static Alvind0.CodingTracker.Models.Enums;
 using Dapper;
-using Microsoft.Data.Sqlite;
+
 namespace Alvind0.CodingTracker.Data;
 
 
-public class CodingSessionRepository
+public class CodingSessionRepository : Repository
 {
-    private readonly string _connectionString;
-
-    public CodingSessionRepository(string connectionString)
-    {
-        _connectionString = connectionString;
-    }
-
-    public SqliteConnection GetConnection()
-    {
-        return new SqliteConnection(_connectionString);
-    }
+    public CodingSessionRepository(string connectionString) : base(connectionString) { }
 
     // Initialize tables: "Coding Sessions" & "Goals" If it doesn't exist yet 
-    public void CreateTables()
+    public void CreateTable()
     {
         using (var connection = GetConnection())
         {
@@ -62,11 +53,8 @@ VALUES (@StartTime, @EndTime, @Duration);";
         }
     }
 
-    //TODO: Implement
     public void UpdateSession(int id, bool isUpdateStart, bool isUpdateEnd, DateTime? startTime = null, DateTime? endTime = null)
     {
-        var query = "";
-
         if (!isUpdateStart && !isUpdateEnd)
         {
             Console.WriteLine("Nothing to update here.");
@@ -95,7 +83,7 @@ VALUES (@StartTime, @EndTime, @Duration);";
                 EndTime = endTime
             };
 
-            if (isUpdateStart && isUpdateEnd) query = @"
+            var query = @"
 UPDATE 'Coding Sessions' SET StartTime = @StartTime, EndTime = @EndTime, Duration = @Duration WHERE Id = @Id";
 
             connection.Execute(query, session);
@@ -103,17 +91,51 @@ UPDATE 'Coding Sessions' SET StartTime = @StartTime, EndTime = @EndTime, Duratio
 
     }
 
-    public IEnumerable<CodingSession> GetCodingSessions()
+    public void DeleteSession(int id)
     {
         using (var connection = GetConnection())
         {
-            var query = @"SELECT * FROM 'Coding Sessions'";
+            var query = @"DELETE FROM 'Coding Sessions' WHERE Id = @Id";
+            connection.Execute(query, id);
+        }
+    }
+
+    public IEnumerable<CodingSession> GetCodingSessions(SortType sortType = SortType.Default, SortOrder sortOrder = SortOrder.Default)
+    {
+        string query = "";
+        
+        using (var connection = GetConnection())
+        {
+            switch (sortType, sortOrder)
+            {
+                case (SortType.Id, SortOrder.Ascending):
+                    query = @"SELECT * FROM 'Coding Sessions' ORDER BY Id ASC";
+                    break;
+                case (SortType.Id, SortOrder.Descending):
+                    query = @"SELECT * FROM 'Coding Sessions' ORDER BY Id DESC";
+                    break;
+                case (SortType.Date, SortOrder.Ascending):
+                    query = @"SELECT * FROM 'Coding Sessions' ORDER BY StartTime ASC";
+                    break;
+                case (SortType.Date, SortOrder.Descending):
+                    query = @"SELECT * FROM 'Coding Sessions' ORDER BY StartTime DESC";
+                    break;
+                case (SortType.Duration, SortOrder.Ascending):
+                    query = @"SELECT * FROM 'Coding Sessions' ORDER BY Duration ASC";
+                    break;
+                case (SortType.Duration, SortOrder.Descending):
+                    query = @"SELECT * FROM 'Coding Sessions' ORDER BY Duration DESC";
+                    break;
+                default:
+                    query = @"SELECT * FROM 'Coding Sessions' ";
+                    break;
+            }
             var sessions = connection.Query<CodingSession>(query);
             return sessions;
         }
     }
 
-    internal bool VerifyId(int id)
+    internal bool VerifyIfIdExists(int id)
     {
         using (var connection = GetConnection())
         {

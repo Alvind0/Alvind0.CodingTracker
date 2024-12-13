@@ -14,6 +14,7 @@ public class MenuHelper
         { MenuOption.SessionStart, "Start Session" },
         { MenuOption.SessionEnd, "End Session" },
 
+        { MenuOption.ViewGoals, "View Goals" },
         { MenuOption.AddGoal, "Add Goal" },
         { MenuOption.EditGoal, "Edit Goal" },
         { MenuOption.RemoveGoal, "Remove Goal" },

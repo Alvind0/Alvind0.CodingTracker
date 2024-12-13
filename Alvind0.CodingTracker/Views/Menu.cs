@@ -34,10 +34,10 @@ public class Menu
                     _codingSessionController.LogSessionManually();
                     break;
                 case MenuOption.Goals:
-                    SubMenu(7, 3);
+                    SubMenu(7, 4);
                     break;
                 case MenuOption.CodingRecords:
-                    SubMenu(10, 6);
+                    SubMenu(11, 6);
                     break;
                 case MenuOption.Exit:
                     Console.WriteLine("Goodbye. ");
@@ -72,6 +72,8 @@ public class Menu
                     break;
                 case MenuOption.SessionEnd:
                     break;
+                case MenuOption.ViewGoals:
+                    break;
                 case MenuOption.AddGoal:
                     break;
                 case MenuOption.EditGoal:
@@ -79,17 +81,19 @@ public class Menu
                 case MenuOption.RemoveGoal:
                     break;
                 case MenuOption.ViewRecords:
-                    _codingSessionController.ShowCodingSessions();
+                    _codingSessionController.ShowCodingSessions(true);
                     break;
                 case MenuOption.EditRecord:
-                    _codingSessionController.UpdateRecord();
+                    _codingSessionController.EditSession();
                     break;
                 case MenuOption.DeleteRecord:
+                    _codingSessionController.DeleteSession();
                     break;
-                case MenuOption.SortRecords:
-                    break;
-                case MenuOption.FilterRecords:
-                    break;
+                //case MenuOption.SortRecords:
+                //    _codingSessionController.SortSessions();
+                //    break;
+                //case MenuOption.FilterRecords:
+                //    break;
                 case MenuOption.ShowReport:
                     break;
                 case MenuOption.Return:

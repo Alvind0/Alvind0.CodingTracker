@@ -11,8 +11,12 @@ var configuration = new ConfigurationBuilder()
 var connectionString = configuration.GetSection("ConnectionStrings")["DefaultConnection"] 
     ?? throw new NullReferenceException("Connection String does not exist in the configuration file.");
 
-var database = new CodingSessionRepository(connectionString);
-var sessionController = new CodingSessionController(database);
+var sessionRepository = new CodingSessionRepository(connectionString);
+var goalRepository = new GoalRepository(connectionString);
+var sessionController = new CodingSessionController(sessionRepository);
+var goalController = new GoalController(goalRepository);
 var menu = new Menu(sessionController);
-database.CreateTables();
+
+sessionRepository.CreateTable();
+goalRepository.CreateTable();
 menu.MainMenu();

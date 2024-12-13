@@ -1,6 +1,9 @@
 ﻿using System.Globalization;
 using Alvind0.CodingTracker.Data;
 using Spectre.Console;
+using Alvind0.CodingTracker.Utilities;
+using Alvind0.CodingTracker.Models;
+using static Alvind0.CodingTracker.Models.Enums;
 namespace Alvind0.CodingTracker.Controllers;
 
 public class CodingSessionController
@@ -25,7 +28,7 @@ public class CodingSessionController
         _repository.AddSession(startTime, endTime);
     }
 
-    public void UpdateRecord()
+    public void EditSession()
     {
         var isUpdateStart = false;
         var isUpdateEnd = false;
@@ -66,7 +69,7 @@ public class CodingSessionController
             isUpdateEnd = true;
             endTime = GetTime(@"Enter end time (format: MM-dd-yy H:mm)");
             _repository.UpdateSession(id, isUpdateStart, isUpdateEnd, endTime);
-        }        
+        }
     }
 
     private int GetId(string message)
@@ -75,7 +78,7 @@ public class CodingSessionController
         while (true)
         {
             var id = AnsiConsole.Ask<int>(message);
-            var isExists = _repository.VerifyId(id);
+            var isExists = _repository.VerifyIfIdExists(id);
             if (isExists) return id;
             Console.WriteLine("Record does not exists.");
         }
@@ -106,9 +109,16 @@ public class CodingSessionController
         return true;
     }
 
-    public void ShowCodingSessions()
+    public void ShowCodingSessions(bool isOnlyView = false)
     {
-        var sessions = _repository.GetCodingSessions();
+        IEnumerable<CodingSession> sessions;
+        if (isOnlyView)
+        {
+            var sortType = GetSortType();
+            var sortOrder = GetSortOrder();
+            sessions = _repository.GetCodingSessions(sortType, sortOrder);
+        }
+        else sessions = _repository.GetCodingSessions();
 
         var table = new Table();
         table.Border = TableBorder.Rounded;
@@ -125,5 +135,36 @@ public class CodingSessionController
         }
         Console.Clear();
         AnsiConsole.Write(table);
+    }
+
+    internal void DeleteSession()
+    {
+        ShowCodingSessions();
+        var id = GetId("Enter the Id of the session you want to delete.");
+        _repository.DeleteSession(id);
+    }
+
+    internal SortType GetSortType()
+    {
+        var sortType = AnsiConsole.Prompt(
+                 new SelectionPrompt<string>()
+         .Title("Sort by type: ")
+                 .AddChoices<string>(SortHelper.GetSortTypes()));
+
+        return SortHelper.GetSortTypeFromDescription(sortType);
+    }
+
+    internal SortOrder GetSortOrder()
+    {
+        var choices = Enum.GetValues(typeof(SortOrder))
+    .Cast<SortOrder>()
+    .Select(order => order.ToString())
+    .ToList();
+        var sortOrder = AnsiConsole.Prompt(
+            new SelectionPrompt<string>()
+            .Title("Sort by order: ")
+            .AddChoices<string>(choices));
+
+        return Enum.TryParse<SortOrder>(sortOrder, out var result) ? result : SortOrder.Default ;
     }
 }
