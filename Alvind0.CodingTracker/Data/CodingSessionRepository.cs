@@ -86,7 +86,7 @@ UPDATE 'Coding Sessions' SET StartTime = @StartTime, EndTime = @EndTime, Duratio
         using (var connection = GetConnection())
         {
             var query = @"DELETE FROM 'Coding Sessions' WHERE Id = @Id";
-            connection.Execute(query, new CodingSession { Id = id});
+            connection.Execute(query, new CodingSession { Id = id });
         }
     }
 

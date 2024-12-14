@@ -1,7 +1,6 @@
 ﻿using System.Globalization;
 using Alvind0.CodingTracker.Models;
 using Dapper;
-using Spectre.Console;
 
 namespace Alvind0.CodingTracker.Data;
 public class GoalRepository : Repository

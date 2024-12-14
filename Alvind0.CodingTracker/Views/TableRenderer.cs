@@ -25,7 +25,7 @@ public class TableRenderer
                 goal.EndDate.ToString("MM-dd-yy"),
                 $"{progress.ToString()}%",
                 goal.IsCompleted ? "Completed" : "Incomplete",
-                progress <= 100 ? codingPerDay.ToString(@"hh\:mm") : "Done!" );
+                progress <= 100 ? codingPerDay.ToString(@"hh\:mm") : "Done!");
         }
 
         AnsiConsole.Clear();
