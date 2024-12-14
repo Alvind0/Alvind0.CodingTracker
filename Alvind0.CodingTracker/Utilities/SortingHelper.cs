@@ -1,7 +1,7 @@
 ﻿using static Alvind0.CodingTracker.Models.Enums;
 namespace Alvind0.CodingTracker.Utilities;
 
-public class SortHelper
+public class SortingHelper
 {
     public static readonly Dictionary<SortType, string> SortTypes = new()
     {
@@ -11,7 +11,17 @@ public class SortHelper
         { SortType.Duration, "Sort by Duration" }
     };
 
+    public static readonly Dictionary<PeriodFilter, string> PeriodFilters = new()
+    {
+        { PeriodFilter.None , "None"},
+        { PeriodFilter.ThisYear, "This year" },
+        { PeriodFilter.ThisMonth, "This month" },
+        { PeriodFilter.ThisWeek, "This week" }
+    };
+
     public static List<string> GetSortTypes() => SortTypes.Values.ToList();
+
+    public static List<string> GetPeriodFilters() => PeriodFilters.Values.ToList();
 
     public static SortType GetSortTypeFromDescription(string description)
     {
@@ -20,5 +30,14 @@ public class SortHelper
             if (sortType.Value == description) return sortType.Key;
         }
         throw new NullReferenceException("Invalid sort type: " + description);
+    }
+
+    public static PeriodFilter GetPeriodFilterFromDescription(string description)
+    {
+        foreach (var periodFilter in PeriodFilters)
+        {
+            if (periodFilter.Value == description) return periodFilter.Key;
+        }
+        throw new NullReferenceException("Invalid period filter: " + description);
     }
 }

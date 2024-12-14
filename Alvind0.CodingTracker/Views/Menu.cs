@@ -1,5 +1,5 @@
-﻿using Alvind0.CodingTracker.Utilities;
-using Alvind0.CodingTracker.Controllers;
+﻿using Alvind0.CodingTracker.Controllers;
+using Alvind0.CodingTracker.Utilities;
 using Spectre.Console;
 using static Alvind0.CodingTracker.Models.Enums;
 namespace Alvind0.CodingTracker.Views;
@@ -7,13 +7,15 @@ namespace Alvind0.CodingTracker.Views;
 public class Menu
 {
     private readonly CodingSessionController _codingSessionController;
-    public Menu(CodingSessionController codingSessionController)
+    private readonly GoalController _goalController;
+    public Menu(CodingSessionController codingSessionController, GoalController goalController)
     {
         _codingSessionController = codingSessionController;
+        _goalController = goalController;
     }
-    public void MainMenu()
+    public async Task MainMenu()
     {
-        
+
         var isExitApp = false;
         while (true)
         {
@@ -28,16 +30,16 @@ public class Menu
             switch (selectedOption)
             {
                 case MenuOption.StartSession:
-                    SubMenu(5, 2);
+                    await _codingSessionController.RunStopwatch();
                     break;
                 case MenuOption.ManuallyLog:
                     _codingSessionController.LogSessionManually();
                     break;
                 case MenuOption.Goals:
-                    SubMenu(7, 4);
+                    SubMenu(5, 4);
                     break;
                 case MenuOption.CodingRecords:
-                    SubMenu(11, 6);
+                    SubMenu(9, 4);
                     break;
                 case MenuOption.Exit:
                     Console.WriteLine("Goodbye. ");
@@ -68,17 +70,17 @@ public class Menu
             var selectedOption = MenuHelper.GetMenuOptionFromDescription(userChoice);
             switch (selectedOption)
             {
-                case MenuOption.SessionStart:
-                    break;
-                case MenuOption.SessionEnd:
-                    break;
                 case MenuOption.ViewGoals:
+                    _goalController.ViewGoals();
                     break;
                 case MenuOption.AddGoal:
+                    _goalController.AddGoal();
                     break;
                 case MenuOption.EditGoal:
+                    _goalController.EditGoal();
                     break;
                 case MenuOption.RemoveGoal:
+                    _goalController.RemoveGoal();
                     break;
                 case MenuOption.ViewRecords:
                     _codingSessionController.ShowCodingSessions(true);
@@ -89,12 +91,8 @@ public class Menu
                 case MenuOption.DeleteRecord:
                     _codingSessionController.DeleteSession();
                     break;
-                //case MenuOption.SortRecords:
-                //    _codingSessionController.SortSessions();
-                //    break;
-                //case MenuOption.FilterRecords:
-                //    break;
                 case MenuOption.ShowReport:
+                    _codingSessionController.ShowReport();
                     break;
                 case MenuOption.Return:
                     isReturnToMainMenu = true;

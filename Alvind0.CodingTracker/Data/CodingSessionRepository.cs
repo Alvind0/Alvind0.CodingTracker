@@ -1,6 +1,6 @@
 ﻿using Alvind0.CodingTracker.Models;
-using static Alvind0.CodingTracker.Models.Enums;
 using Dapper;
+using static Alvind0.CodingTracker.Models.Enums;
 
 namespace Alvind0.CodingTracker.Data;
 
@@ -9,8 +9,7 @@ public class CodingSessionRepository : Repository
 {
     public CodingSessionRepository(string connectionString) : base(connectionString) { }
 
-    // Initialize tables: "Coding Sessions" & "Goals" If it doesn't exist yet 
-    public void CreateTable()
+    public void CreateTableIfNotExists()
     {
         using (var connection = GetConnection())
         {
@@ -21,15 +20,7 @@ public class CodingSessionRepository : Repository
             Id INTEGER PRIMARY KEY AUTOINCREMENT,
             StartTime TEXT NOT NULL,
             EndTime TEXT NOT NULL,
-            Duration INTEGER);
-            CREATE TABLE IF NOT EXISTS Goals(
-            Id INTEGER PRIMARY KEY AUTOINCREMENT,
-            Goal INTEGER NOT NULL,
-            StartDate TEXT NOT NULL,
-            EndDate TEXT,
-            Progress INTEGER,
-            IsCompleted INTEGER);
-            ";
+            Duration INTEGER)";
 
             connection.Execute(query);
         }
@@ -64,16 +55,16 @@ VALUES (@StartTime, @EndTime, @Duration);";
         using (var connection = GetConnection())
         {
             connection.Open();
-            if (!startTime.HasValue)
+            if (startTime == null)
             {
                 var databaseStartTime = @"SELECT StartTime FROM 'Coding Sessions' WHERE Id = @Id";
-                startTime = connection.QuerySingle<DateTime>(databaseStartTime, id);
+                startTime = connection.QuerySingle<DateTime>(databaseStartTime, new CodingSession { Id = id });
             }
 
-            if (!endTime.HasValue)
+            if (endTime == null)
             {
                 var databaseEndTime = @"SELECT EndTime FROM 'Coding Sessions' WHERE Id = @Id";
-                endTime = connection.QuerySingle<DateTime>(databaseEndTime, id);
+                endTime = connection.QuerySingle<DateTime>(databaseEndTime, new CodingSession { Id = id });
             }
 
             var session = new CodingSession
@@ -88,7 +79,6 @@ UPDATE 'Coding Sessions' SET StartTime = @StartTime, EndTime = @EndTime, Duratio
 
             connection.Execute(query, session);
         }
-
     }
 
     public void DeleteSession(int id)
@@ -96,46 +86,74 @@ UPDATE 'Coding Sessions' SET StartTime = @StartTime, EndTime = @EndTime, Duratio
         using (var connection = GetConnection())
         {
             var query = @"DELETE FROM 'Coding Sessions' WHERE Id = @Id";
-            connection.Execute(query, id);
+            connection.Execute(query, new CodingSession { Id = id});
         }
     }
 
-    public IEnumerable<CodingSession> GetCodingSessions(SortType sortType = SortType.Default, SortOrder sortOrder = SortOrder.Default)
+    // Get coding sessions with the ability to sort/filter by period
+    // Can get coding sessions without any sort/filter
+    public IEnumerable<CodingSession> GetCodingSessions
+        (PeriodFilter period = PeriodFilter.None, SortType sortType = SortType.Default, SortOrder sortOrder = SortOrder.Default)
     {
-        string query = "";
-        
+        var query = GetSortingQuery(sortType, sortOrder) + GetFilterQuery(period);
+
         using (var connection = GetConnection())
         {
-            switch (sortType, sortOrder)
-            {
-                case (SortType.Id, SortOrder.Ascending):
-                    query = @"SELECT * FROM 'Coding Sessions' ORDER BY Id ASC";
-                    break;
-                case (SortType.Id, SortOrder.Descending):
-                    query = @"SELECT * FROM 'Coding Sessions' ORDER BY Id DESC";
-                    break;
-                case (SortType.Date, SortOrder.Ascending):
-                    query = @"SELECT * FROM 'Coding Sessions' ORDER BY StartTime ASC";
-                    break;
-                case (SortType.Date, SortOrder.Descending):
-                    query = @"SELECT * FROM 'Coding Sessions' ORDER BY StartTime DESC";
-                    break;
-                case (SortType.Duration, SortOrder.Ascending):
-                    query = @"SELECT * FROM 'Coding Sessions' ORDER BY Duration ASC";
-                    break;
-                case (SortType.Duration, SortOrder.Descending):
-                    query = @"SELECT * FROM 'Coding Sessions' ORDER BY Duration DESC";
-                    break;
-                default:
-                    query = @"SELECT * FROM 'Coding Sessions' ";
-                    break;
-            }
             var sessions = connection.Query<CodingSession>(query);
             return sessions;
         }
     }
 
-    internal bool VerifyIfIdExists(int id)
+    public string GetFilterQuery(PeriodFilter period)
+    {
+        var filterQuery = "";
+        // There has to be a better way to query but if it works it works.
+        switch (period)
+        {
+            case PeriodFilter.ThisYear:
+                filterQuery = $@"WHERE strftime('%Y', StartTime) = strftime('%Y', 'now')";
+                break;
+            case PeriodFilter.ThisMonth:
+                filterQuery = $@"WHERE strftime('%Y', StartTime) = strftime('%Y', 'now') AND strftime('%m', StartTime) = strftime('%m', 'now')";
+                break;
+            case PeriodFilter.ThisWeek:
+                filterQuery = $@"WHERE strftime('%Y', StartTime) = strftime('%Y', 'now') AND strftime('%U', StartTime) = strftime('%U', 'now')";
+                break;
+        }
+        return filterQuery;
+    }
+
+    public static string GetSortingQuery(SortType sortType, SortOrder sortOrder)
+    {
+        var query = "";
+        switch (sortType, sortOrder)
+        {
+            case (SortType.Id, SortOrder.Ascending):
+                query = @"SELECT * FROM 'Coding Sessions' ORDER BY Id ASC ";
+                break;
+            case (SortType.Id, SortOrder.Descending):
+                query = @"SELECT * FROM 'Coding Sessions' ORDER BY Id DESC ";
+                break;
+            case (SortType.Date, SortOrder.Ascending):
+                query = @"SELECT * FROM 'Coding Sessions' ORDER BY StartTime ASC ";
+                break;
+            case (SortType.Date, SortOrder.Descending):
+                query = @"SELECT * FROM 'Coding Sessions' ORDER BY StartTime DESC ";
+                break;
+            case (SortType.Duration, SortOrder.Ascending):
+                query = @"SELECT * FROM 'Coding Sessions' ORDER BY Duration ASC ";
+                break;
+            case (SortType.Duration, SortOrder.Descending):
+                query = @"SELECT * FROM 'Coding Sessions' ORDER BY Duration DESC ";
+                break;
+            default:
+                query = @"SELECT * FROM 'Coding Sessions' ";
+                break;
+        }
+        return query;
+    }
+
+    public bool VerifyIfIdExists(int id)
     {
         using (var connection = GetConnection())
         {

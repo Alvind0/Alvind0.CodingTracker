@@ -1,21 +1,51 @@
 ﻿using System.Globalization;
 using Alvind0.CodingTracker.Data;
-using Spectre.Console;
-using Alvind0.CodingTracker.Utilities;
 using Alvind0.CodingTracker.Models;
+using Alvind0.CodingTracker.Utilities;
+using Alvind0.CodingTracker.Views;
+using Spectre.Console;
 using static Alvind0.CodingTracker.Models.Enums;
 namespace Alvind0.CodingTracker.Controllers;
 
 public class CodingSessionController
 {
     private readonly CodingSessionRepository _repository;
-
+    private readonly TableRenderer _tableRenderer = new();
+    private readonly StopwatchHelper _stopwatchHelper = new();
     public CodingSessionController(CodingSessionRepository repository)
     {
         _repository = repository ?? throw new ArgumentNullException("Repository does not exist.");
     }
 
+    public async Task RunStopwatch()
+    {
+        while (true)
+        {
+            var options = MenuHelper.GetStopwatchMenu(_stopwatchHelper.State);
+            var selectedOption = AnsiConsole.Prompt(
+                new SelectionPrompt<string>()
+                .AddChoices<string>(options));
 
+            switch (selectedOption)
+            {
+                case "Start":
+                case "Resume":
+                    _stopwatchHelper.StartStopwatch();
+                    break;
+                case "End":
+                    _stopwatchHelper.StopStopwatch();
+                    return;
+            }
+            //TODO: Figure out how long to delay
+            await Task.Delay(100);
+        }
+
+    }
+
+    public void LogSession(DateTime startTime, DateTime endTime)
+    {
+
+    }
     public void LogSessionManually()
     {
         DateTime startTime, endTime;
@@ -114,27 +144,15 @@ public class CodingSessionController
         IEnumerable<CodingSession> sessions;
         if (isOnlyView)
         {
+            var periodFilter = GetPeriodFilter();
             var sortType = GetSortType();
             var sortOrder = GetSortOrder();
-            sessions = _repository.GetCodingSessions(sortType, sortOrder);
+
+            sessions = _repository.GetCodingSessions(periodFilter, sortType, sortOrder);
         }
         else sessions = _repository.GetCodingSessions();
 
-        var table = new Table();
-        table.Border = TableBorder.Rounded;
-        table.AddColumns("Id", "Start Time", "EndTime", "Duration");
-
-        foreach (var session in sessions)
-        {
-            table.AddRow(
-                session.Id.ToString(),
-                session.StartTime.ToString("MM-dd-yy H:mm"),
-                session.EndTime?.ToString("MM-dd-yy H:mm") ?? "Invalid Time.",
-                session.Duration.ToString(@"hh\:mm")
-                );
-        }
-        Console.Clear();
-        AnsiConsole.Write(table);
+        _tableRenderer.RenderSesionsTable(sessions);
     }
 
     internal void DeleteSession()
@@ -149,22 +167,43 @@ public class CodingSessionController
         var sortType = AnsiConsole.Prompt(
                  new SelectionPrompt<string>()
          .Title("Sort by type: ")
-                 .AddChoices<string>(SortHelper.GetSortTypes()));
+                 .AddChoices<string>(SortingHelper.GetSortTypes()));
 
-        return SortHelper.GetSortTypeFromDescription(sortType);
+        return SortingHelper.GetSortTypeFromDescription(sortType);
     }
 
     internal SortOrder GetSortOrder()
     {
-        var choices = Enum.GetValues(typeof(SortOrder))
-    .Cast<SortOrder>()
-    .Select(order => order.ToString())
-    .ToList();
+        var choices = Enum.GetValues<SortOrder>().Select(a => a.ToString()).ToList();
         var sortOrder = AnsiConsole.Prompt(
             new SelectionPrompt<string>()
             .Title("Sort by order: ")
             .AddChoices<string>(choices));
 
-        return Enum.TryParse<SortOrder>(sortOrder, out var result) ? result : SortOrder.Default ;
+        return Enum.TryParse<SortOrder>(sortOrder, out var result) ? result : SortOrder.Default;
+    }
+
+    internal PeriodFilter GetPeriodFilter()
+    {
+        var periodFilter = AnsiConsole.Prompt(
+            new SelectionPrompt<string>()
+            .Title("Filter by period: ")
+            .AddChoices<string>(SortingHelper.GetPeriodFilters()));
+
+        return SortingHelper.GetPeriodFilterFromDescription(periodFilter);
+    }
+
+    internal void ShowReport()
+    {
+        var sessions = _repository.GetCodingSessions();
+        var totalDuration = TimeSpan.Zero;
+        foreach (var session in sessions)
+        {
+            totalDuration += session.Duration;
+        }
+        var sessionsCount = sessions.Count();
+        var averageDuration = totalDuration / sessionsCount;
+
+        _tableRenderer.RenderSessionsReport(sessionsCount, totalDuration, averageDuration);
     }
 }

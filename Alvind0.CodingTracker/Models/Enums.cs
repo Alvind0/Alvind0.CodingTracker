@@ -1,4 +1,6 @@
-﻿namespace Alvind0.CodingTracker.Models;
+﻿using System.Runtime.Serialization;
+
+namespace Alvind0.CodingTracker.Models;
 
 public class Enums
 {
@@ -12,21 +14,28 @@ public class Enums
         Default, Id, Date, Duration
     }
 
+    public enum PeriodFilter
+    {
+        ThisWeek, ThisMonth, ThisYear, None
+    }
+
+    public enum StopwatchState
+    {
+        Default, Running, Paused
+    }
+
     public enum MenuOption
     {
         // Main menu
         StartSession, ManuallyLog, Goals, CodingRecords, Exit,
 
-        // Session Menu (5, 2)
-        SessionStart, SessionEnd,
+        // Goal Menu (5, 4)
+        ViewGoals, AddGoal, EditGoal, RemoveGoal,
 
-        // Goal Menu (7, 4)
-        ViewGoals, AddGoal, EditGoal, RemoveGoal, 
+        // Record Menu (9, 4)
+        ViewRecords, EditRecord, DeleteRecord, ShowReport,
 
-        // Record Menu (11, 6)
-        ViewRecords, EditRecord, DeleteRecord, SortRecords, FilterRecords, ShowReport,
-
-        // 17
+        // 13
         Return,
     }
 }

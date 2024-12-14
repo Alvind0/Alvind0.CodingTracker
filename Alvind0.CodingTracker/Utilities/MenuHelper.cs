@@ -11,9 +11,6 @@ public class MenuHelper
         { MenuOption.CodingRecords, "Coding Records" },
         { MenuOption.Exit, "Exit Application" },
 
-        { MenuOption.SessionStart, "Start Session" },
-        { MenuOption.SessionEnd, "End Session" },
-
         { MenuOption.ViewGoals, "View Goals" },
         { MenuOption.AddGoal, "Add Goal" },
         { MenuOption.EditGoal, "Edit Goal" },
@@ -22,18 +19,38 @@ public class MenuHelper
         { MenuOption.ViewRecords, "View Records" },
         { MenuOption.EditRecord, "Edit Record" },
         { MenuOption.DeleteRecord, "Delete Record" },
-        { MenuOption.SortRecords, "Sort Records" },
-        { MenuOption.FilterRecords, "Filter Records" },
-        { MenuOption.ShowReport, "Show Report" },
+        { MenuOption.ShowReport, "Show Statistics" },
 
         { MenuOption.Return, "Go Back" },
     };
+
+    public static string[] GetStopwatchMenu(StopwatchState state)
+    {
+        string[] options;
+        switch (state)
+        {
+            case StopwatchState.Default:
+                options = new[] { "Start", "End" };
+                break;
+            case StopwatchState.Running:
+                options = new[] { "Pause", "End" };
+                break;
+            //case StopwatchState.Paused:
+            //    options = new[] { "Resume", "End" };
+            //    break;
+            default:
+                throw new NullReferenceException($"Option does not exists {state}");
+        }
+
+        return options;
+    }
 
     public static string GetMenuOption(MenuOption option)
     {
         var result = "";
         return MenuOptionDescriptions.TryGetValue(option, out result) ? result : throw new NullReferenceException("Menu option does not exist.");
     }
+
     public static List<string> GetMenuOptions(int startIndex, int count)
         => MenuOptionDescriptions.Values.ToList().Skip(startIndex).Take(count).ToList();
 
