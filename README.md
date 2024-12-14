@@ -57,3 +57,13 @@ Developed using *C#*, *SQLite*, *Dapper ORM*.
 - Separating the application into multple classes meant I had to change screen very often to read how a method works.
 - I hope I could learn how to test my app in the near future. I used the app for a few days but I'm still worried about edge cases.
 - ~~I couldn't understand asynchronous operations and just threw in async and await and brute force tested my way into finishing the app. Yes, I just threw in code and hope it works and it did! Good job, me!~~
+
+## Things I noticed after trying to give a "self-review", reading through my code line by line (Points of Reflection)
+Mostly about scope and SoC to be honest.
+
+1. I didn't bother thinking of access modifiers, and forgot that directly accessing a data class from another data class is bad.
+The reason for this is: direct access between data classed creates tight coupling. Which means changes in a class may impact the other.
+If done intentionally, it's fine. But not in my case. It voilates SoC principles. I should have had the controller mediate interactions between them.
+  
+2. Encapsulation. I had methods that had the same name between classes. All my classes were public or internal, so if I wasn't careful I could have called a method from another class unintentionally.
+I was successful in hiding internal implementation details but failed on restricting access to only expose necessary methods. TLDR: I didn't think things through.
