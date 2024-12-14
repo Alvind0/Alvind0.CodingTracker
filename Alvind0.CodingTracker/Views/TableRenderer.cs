@@ -9,19 +9,23 @@ public class TableRenderer
     {
         var table = new Table();
         table.Border = TableBorder.Rounded;
-        table.AddColumns("Id", "Name", "Goal", "Start Date", "Deadline", "Progress", "Completed");
+        table.AddColumns("Id", "Name", "Goal", "Start Date", "Deadline", "Progress", "Completed", "Hours Needed Per Day");
         table.Columns[0].RightAligned();
         table.Columns[6].LeftAligned();
-
         foreach (var goal in goals)
         {
+            var daysUntilDeadline = (goal.EndDate - DateTime.Today).Days;
+            var codingPerDay = (goal.DurationGoal - goal.Progress) / daysUntilDeadline;
+            var progress = Convert.ToInt32(goal.Progress / goal.DurationGoal * 100);
             table.AddRow(
                 goal.Id.ToString(),
                 goal.Name,
+                goal.DurationGoal.ToString(@"hh\:mm"),
                 goal.StartDate.ToString("MM-dd-yy"),
-                goal.EndDate?.ToString("MM-dd-yy") ?? "Invalid Date.",
-                goal.Progress.ToString(@"h\:mm"),
-                goal.IsCompleted ? "Completed" : "Incomplete");
+                goal.EndDate.ToString("MM-dd-yy"),
+                $"{progress.ToString()}%",
+                goal.IsCompleted ? "Completed" : "Incomplete",
+                progress <= 100 ? codingPerDay.ToString(@"hh\:mm") : "Done!" );
         }
 
         AnsiConsole.Clear();

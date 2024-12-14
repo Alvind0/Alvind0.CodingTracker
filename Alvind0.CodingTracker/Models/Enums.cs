@@ -1,6 +1,4 @@
-﻿using System.Runtime.Serialization;
-
-namespace Alvind0.CodingTracker.Models;
+﻿namespace Alvind0.CodingTracker.Models;
 
 public class Enums
 {
@@ -21,7 +19,7 @@ public class Enums
 
     public enum StopwatchState
     {
-        Default, Running, Paused
+        Default, Running
     }
 
     public enum MenuOption

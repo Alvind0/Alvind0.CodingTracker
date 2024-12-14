@@ -20,7 +20,7 @@ public class CodingSessionRepository : Repository
             Id INTEGER PRIMARY KEY AUTOINCREMENT,
             StartTime TEXT NOT NULL,
             EndTime TEXT NOT NULL,
-            Duration INTEGER)";
+            Duration TEXT)";
 
             connection.Execute(query);
         }

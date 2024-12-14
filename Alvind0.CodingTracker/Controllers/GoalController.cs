@@ -8,12 +8,14 @@ namespace Alvind0.CodingTracker.Controllers;
 public class GoalController
 {
     private readonly GoalRepository _repository;
+    private readonly CodingSessionRepository _sessionRepository;
     private readonly TableRenderer _tableRenderer;
 
-    public GoalController(GoalRepository repository)
+    public GoalController(GoalRepository repository, CodingSessionRepository sessionRepository, TableRenderer renderer)
     {
         _repository = repository;
-        _tableRenderer = new TableRenderer();
+        _sessionRepository = sessionRepository;
+        _tableRenderer = renderer;
     }
 
     public void AddGoal()
@@ -27,7 +29,7 @@ public class GoalController
         };
         if (AnsiConsole.Confirm("Do you want to name your goal?")) goal.Name = GetGoalName();
 
-        _repository.AddGoal(goal.Name, goal.DurationGoal, goal.StartDate, goal.EndDate.Value);
+        _repository.AddGoal(goal.Name, goal.DurationGoal, goal.StartDate, goal.EndDate);
     }
 
     public void EditGoal()
@@ -72,12 +74,12 @@ public class GoalController
                 _repository.UpdateGoal(id, query, name);
                 break;
             case 2:
-                query = @"UPDATE Goals SET Goal = @DurationGoal WHERE Id = @Id";
+                query = @"UPDATE Goals SET Goal = @DurationGoalString WHERE Id = @Id";
                 durationGoal = GetDurationGoal();
                 _repository.UpdateGoal(id, query, null, durationGoal);
                 break;
             case 3:
-                query = @"UPDATE Goals SET 'Goal Name' = @Name, Goal = @DurationGoal WHERE Id = @Id";
+                query = @"UPDATE Goals SET 'Goal Name' = @Name, Goal = @DurationGoalString WHERE Id = @Id";
                 name = GetGoalName();
                 isUpdateName = true;
                 durationGoal = GetDurationGoal();
@@ -95,13 +97,13 @@ public class GoalController
                 _repository.UpdateGoal(id, query, name, null, startDate);
                 break;
             case 6:
-                query = @"UPDATE Goals SET Goal = @DurationGoal, StartDate = @StartDate WHERE Id = @Id";
+                query = @"UPDATE Goals SET Goal = @DurationGoalString, StartDate = @StartDate WHERE Id = @Id";
                 durationGoal = GetDurationGoal();
                 startDate = GetDate("Enter start date (format : 'MM-dd-yy'): ");
                 _repository.UpdateGoal(id, query, null, durationGoal, startDate);
                 break;
             case 7:
-                query = @"UPDATE Goals SET 'Goal Name' = @Name, Goal = @DurationGoal, StartDate = @StartDate WHERE Id = @Id";
+                query = @"UPDATE Goals SET 'Goal Name' = @Name, Goal = @DurationGoalString, StartDate = @StartDate WHERE Id = @Id";
                 name = GetGoalName();
                 durationGoal = GetDurationGoal();
                 startDate = GetDate("Enter start date (format : 'MM-dd-yy'): ");
@@ -119,13 +121,13 @@ public class GoalController
                 _repository.UpdateGoal(id, query, name, null, null, endDate);
                 break;
             case 10:
-                query = @"UPDATE Goals SET Goal = @DurationGoal, EndDate = @EndDate WHERE Id = @Id";
+                query = @"UPDATE Goals SET Goal = @DurationGoalString, EndDate = @EndDate WHERE Id = @Id";
                 durationGoal = GetDurationGoal();
                 endDate = GetDate("Enter deadline (format : 'MM-dd-yy'): ");
                 _repository.UpdateGoal(id, query, null, durationGoal, null, endDate);
                 break;
             case 11:
-                query = @"UPDATE Goals SET 'Goal Name' = @Name, Goal = @DurationGoal, EndDate = @EndDate WHERE Id = @Id";
+                query = @"UPDATE Goals SET 'Goal Name' = @Name, Goal = @DurationGoalString, EndDate = @EndDate WHERE Id = @Id";
                 name = GetGoalName();
                 durationGoal = GetDurationGoal();
                 endDate = GetDate("Enter deadline (format : 'MM-dd-yy'): ");
@@ -145,14 +147,14 @@ public class GoalController
                 _repository.UpdateGoal(id, query, name, null, startDate, endDate);
                 break;
             case 14:
-                query = @"UPDATE Goals SET Goal = @DurationGoal, StartDate = @StartDate, EndDate = @EndDate WHERE Id = @Id";
+                query = @"UPDATE Goals SET Goal = @DurationGoalString, StartDate = @StartDate, EndDate = @EndDate WHERE Id = @Id";
                 durationGoal = GetDurationGoal();
                 startDate = GetDate("Enter start date (format : 'MM-dd-yy'): ");
                 endDate = GetDate("Enter deadline (format : 'MM-dd-yy'): ");
                 _repository.UpdateGoal(id, query, null, durationGoal, startDate, endDate);
                 break;
             case 15:
-                query = @"UPDATE Goals SET 'Goal Name' = @Name, Goal = @DurationGoal, StartDate = @StartDate, EndDate = @EndDate WHERE Id = @Id";
+                query = @"UPDATE Goals SET 'Goal Name' = @Name, Goal = @DurationGoalString, StartDate = @StartDate, EndDate = @EndDate WHERE Id = @Id";
                 name = GetGoalName();
                 durationGoal = GetDurationGoal();
                 startDate = GetDate("Enter start date (format : 'MM-dd-yy'): ");
@@ -173,8 +175,28 @@ public class GoalController
     public void ViewGoals()
     {
         var goals = _repository.GetGoals();
+        var sessions = _sessionRepository.GetCodingSessions();
 
+        foreach (var goal in goals)
+        {
+            goal.Progress = CalculateProgress(goal, sessions);
+            goal.ProgressString = goal.Progress.ToString(@"hh\:mm");
+            goal.DurationGoalString = goal.DurationGoal.ToString(@"hh\:mm");
+        }
         _tableRenderer.RenderGoalsTable(goals);
+    }
+
+    private TimeSpan CalculateProgress(Goal goal, IEnumerable<CodingSession> sessions)
+    {
+        var progress = TimeSpan.Zero;
+        foreach (var session in sessions)
+        {
+            if (session.StartTime >= goal.StartDate && session.EndTime <= goal.EndDate)
+            {
+                progress += session.Duration;
+            }
+        }
+        return progress;
     }
 
     private string GetGoalName()

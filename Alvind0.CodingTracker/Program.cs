@@ -15,8 +15,9 @@ var connectionString = configuration.GetSection("ConnectionStrings")["DefaultCon
 
 var sessionRepository = new CodingSessionRepository(connectionString);
 var goalRepository = new GoalRepository(connectionString);
-var sessionController = new CodingSessionController(sessionRepository);
-var goalController = new GoalController(goalRepository);
+var renderer = new TableRenderer();
+var sessionController = new CodingSessionController(sessionRepository, renderer);
+var goalController = new GoalController(goalRepository, sessionRepository, renderer);
 var menu = new Menu(sessionController, goalController);
 
 sessionRepository.CreateTableIfNotExists();

@@ -33,7 +33,7 @@ public class MenuHelper
                 options = new[] { "Start", "End" };
                 break;
             case StopwatchState.Running:
-                options = new[] { "Pause", "End" };
+                options = new[] { "End" };
                 break;
             //case StopwatchState.Paused:
             //    options = new[] { "Resume", "End" };

@@ -10,17 +10,22 @@ namespace Alvind0.CodingTracker.Controllers;
 public class CodingSessionController
 {
     private readonly CodingSessionRepository _repository;
-    private readonly TableRenderer _tableRenderer = new();
+    private readonly TableRenderer _renderer;
     private readonly StopwatchHelper _stopwatchHelper = new();
-    public CodingSessionController(CodingSessionRepository repository)
+    public CodingSessionController(CodingSessionRepository repository, TableRenderer renderer)
     {
-        _repository = repository ?? throw new ArgumentNullException("Repository does not exist.");
+        _repository = repository;
+        _renderer = renderer;
     }
 
     public async Task RunStopwatch()
     {
+        DateTime startTime = new(), endTime = new();
+
         while (true)
         {
+            bool isEndedStopwatch = false;
+
             var options = MenuHelper.GetStopwatchMenu(_stopwatchHelper.State);
             var selectedOption = AnsiConsole.Prompt(
                 new SelectionPrompt<string>()
@@ -29,22 +34,25 @@ public class CodingSessionController
             switch (selectedOption)
             {
                 case "Start":
-                case "Resume":
+                    startTime = DateTime.Now;
                     _stopwatchHelper.StartStopwatch();
                     break;
                 case "End":
+                    endTime = DateTime.Now;
+                    isEndedStopwatch = true;
                     _stopwatchHelper.StopStopwatch();
-                    return;
+                    break;
             }
+            if (isEndedStopwatch) break;
             //TODO: Figure out how long to delay
-            await Task.Delay(100);
+            await Task.Delay(60);
         }
-
+        if (AnsiConsole.Confirm("Log this session?")) LogSession(startTime, endTime);
     }
 
     public void LogSession(DateTime startTime, DateTime endTime)
     {
-
+        _repository.AddSession(startTime, endTime);
     }
     public void LogSessionManually()
     {
@@ -152,7 +160,7 @@ public class CodingSessionController
         }
         else sessions = _repository.GetCodingSessions();
 
-        _tableRenderer.RenderSesionsTable(sessions);
+        _renderer.RenderSesionsTable(sessions);
     }
 
     internal void DeleteSession()
@@ -204,6 +212,6 @@ public class CodingSessionController
         var sessionsCount = sessions.Count();
         var averageDuration = totalDuration / sessionsCount;
 
-        _tableRenderer.RenderSessionsReport(sessionsCount, totalDuration, averageDuration);
+        _renderer.RenderSessionsReport(sessionsCount, totalDuration, averageDuration);
     }
 }
