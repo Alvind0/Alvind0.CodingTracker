@@ -31,7 +31,7 @@ Developed using *C#*, *SQLite*, *Dapper ORM*.
 
 * Manual Logging - Add sessions manually.
 
--![SessionMenu](images/CodingTracker-SessionMenu.PNG)
+-![SessionMenu](images/CodingMenu-SessionMenu.PNG)
 -![Statistics](images/CodingTracker-Statistics.PNG)
 
 * Session Management
