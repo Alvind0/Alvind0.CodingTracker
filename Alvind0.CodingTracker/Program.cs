@@ -5,13 +5,11 @@ using Microsoft.Extensions.Configuration;
 
 var configuration = new ConfigurationBuilder()
     .SetBasePath(Directory.GetCurrentDirectory())
-    .AddJsonFile("//Alvind0.CodingTracker//Properties//appsettings.json")
+    .AddJsonFile("Properties//appsettings.json", optional: false, reloadOnChange: true)
     .Build();
 
 var connectionString = configuration.GetSection("ConnectionStrings")["DefaultConnection"]
     ?? throw new NullReferenceException("Connection String does not exist in the configuration file.");
-
-// Had to abandon the idea of using .NET MAUI to make this app because it's taking way too long.
 
 var sessionRepository = new CodingSessionRepository(connectionString);
 var goalRepository = new GoalRepository(connectionString);

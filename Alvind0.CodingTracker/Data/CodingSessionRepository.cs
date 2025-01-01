@@ -107,7 +107,6 @@ UPDATE 'Coding Sessions' SET StartTime = @StartTime, EndTime = @EndTime, Duratio
     public string GetFilterQuery(PeriodFilter period)
     {
         var filterQuery = "";
-        // There has to be a better way to query but if it works it works.
         switch (period)
         {
             case PeriodFilter.ThisYear:

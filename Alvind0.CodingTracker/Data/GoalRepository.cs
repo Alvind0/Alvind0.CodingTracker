@@ -87,7 +87,6 @@ VALUES (@Name, @DurationGoal, @StartDate, @EndDate)";
             var query = @"SELECT Id, ""Goal Name"" as Name, Goal as DurationGoalString, StartDate, EndDate, Progress as ProgressString, IsCompleted FROM Goals"; // Select into DurationGoalString
             var goals = connection.Query<Goal>(query);
 
-            // Parse DurationGoalString and Progress string back into TimeSpan
             foreach (var goal in goals)
             {
                 if (TimeSpan.TryParseExact(goal.DurationGoalString, @"hh\:mm\:ss", CultureInfo.InvariantCulture, out var durationGoal))
@@ -96,8 +95,7 @@ VALUES (@Name, @DurationGoal, @StartDate, @EndDate)";
                 }
                 else
                 {
-                    // Handle cases where the string cannot be parsed (optional)
-                    goal.DurationGoal = TimeSpan.Zero; // Or some other default value
+                    goal.DurationGoal = TimeSpan.Zero; 
                     Console.WriteLine($"Warning: Could not parse DurationGoal for Goal Id: {goal.Id}");
                 }
 
@@ -107,8 +105,7 @@ VALUES (@Name, @DurationGoal, @StartDate, @EndDate)";
                 }
                 else
                 {
-                    // Handle cases where the string cannot be parsed (optional)
-                    goal.Progress = TimeSpan.Zero; // Or some other default value
+                    goal.Progress = TimeSpan.Zero;
                     Console.WriteLine($"Warning: Could not parse Progress for Goal Id: {goal.Id}");
                 }
             }

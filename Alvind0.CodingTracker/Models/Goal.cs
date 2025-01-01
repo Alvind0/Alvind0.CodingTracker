@@ -1,5 +1,4 @@
 ﻿namespace Alvind0.CodingTracker.Models;
-// TODO : Create logic for Progress to be automatically calculated
 public class Goal
 {
     public int Id { get; set; }

@@ -63,7 +63,6 @@ public class MenuHelper
                 return option.Key;
             }
         }
-        // Compliler say option may not exist. Green squiggly line annoy me. I throw exception. Me smart.
         throw new NullReferenceException($"Invalid menu description: {description}");
     }
 }

@@ -5,6 +5,7 @@ using Alvind0.CodingTracker.Utilities;
 using Alvind0.CodingTracker.Views;
 using Spectre.Console;
 using static Alvind0.CodingTracker.Models.Enums;
+
 namespace Alvind0.CodingTracker.Controllers;
 
 public class CodingSessionController
@@ -44,7 +45,6 @@ public class CodingSessionController
                     break;
             }
             if (isEndedStopwatch) break;
-            //TODO: Figure out how long to delay
             await Task.Delay(60);
         }
         if (AnsiConsole.Confirm("Log this session?")) LogSession(startTime, endTime);

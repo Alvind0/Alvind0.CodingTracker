@@ -9,8 +9,7 @@ public class StopwatchHelper
     private readonly Stopwatch _stopwatch = new();
     private StopwatchState _state = StopwatchState.Default;
     private CancellationTokenSource _cts;
-
-    // Squiggly green line annoy me. Me add unnecesarry CancellationTokenSource in constructor.
+    
     public StopwatchHelper()
     {
         _cts = new CancellationTokenSource();
