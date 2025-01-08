@@ -5,7 +5,7 @@ using Microsoft.Extensions.Configuration;
 
 var configuration = new ConfigurationBuilder()
     .SetBasePath(Directory.GetCurrentDirectory())
-    .AddJsonFile("Properties//appsettings.json", optional: false, reloadOnChange: true)
+    .AddJsonFile(Path.Combine("Alvind0.CodingTracker", "Properties", "appsettings.json"), optional: false, reloadOnChange: true)
     .Build();
 
 var connectionString = configuration.GetSection("ConnectionStrings")["DefaultConnection"]
