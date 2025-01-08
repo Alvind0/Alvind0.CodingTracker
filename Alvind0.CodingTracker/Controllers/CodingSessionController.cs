@@ -61,7 +61,10 @@ public class CodingSessionController
         {
             startTime = GetTime("Insert Start Time (Format: MM-dd-yy H:mm): ");
             endTime = GetTime("Insert End Time (Format: MM-dd-yy H:mm): ");
-            if (ValidateDateTime(startTime, endTime)) break;
+            if (ValidateStartAndEndTime(startTime, endTime)) break;
+
+            Console.Clear();
+            Console.WriteLine("Start time cannot be later than end time.");
         }
         _repository.AddSession(startTime, endTime);
     }
@@ -92,7 +95,10 @@ public class CodingSessionController
             {
                 startTime = GetTime(@"Enter start time (format: MM-dd-yy H:mm)");
                 endTime = GetTime(@"Enter end time (format: MM-dd-yy H:mm)");
-                if (ValidateDateTime(startTime, endTime)) break;
+                if (ValidateStartAndEndTime(startTime, endTime)) break;
+
+                Console.Clear();
+                Console.WriteLine("Start time cannot be later than End time.");
             }
             _repository.UpdateSession(id, isUpdateStart, isUpdateEnd, startTime, endTime);
         }
@@ -127,24 +133,32 @@ public class CodingSessionController
         while (true)
         {
             var time = AnsiConsole.Ask<string>(message);
-            if (DateTime.TryParseExact(time, "MM-dd-yy H:mm", CultureInfo.InvariantCulture, DateTimeStyles.None, out var result))
+            var isValidDate = ValidateDateTime(time);
+
+            if (isValidDate)
             {
-                return result;
+                return DateTime.ParseExact(time, "MM-dd-yy H:mm", CultureInfo.InvariantCulture, DateTimeStyles.None);
             }
+
             Console.Clear();
             Console.WriteLine("Please enter in the correct format.");
         }
     }
 
-    public bool ValidateDateTime(DateTime startTime, DateTime endTime)
+    public bool ValidateDateTime(string time)
     {
-        if (startTime > endTime)
+        time = time.Trim();
+        if (DateTime.TryParseExact(time, "MM-dd-yy H:mm", CultureInfo.InvariantCulture, DateTimeStyles.None, out _))
         {
-            Console.Clear();
-            Console.WriteLine("Start time cannot be later than End time");
-            return false;
+            return true;
         }
-        return true;
+
+        return false;
+    }
+
+    public bool ValidateStartAndEndTime(DateTime startTime, DateTime endTime)
+    {
+        return startTime <= endTime;
     }
 
     public void ShowCodingSessions(bool isOnlyView = false)
